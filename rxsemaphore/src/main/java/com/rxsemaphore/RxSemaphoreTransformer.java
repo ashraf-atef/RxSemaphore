@@ -8,7 +8,7 @@ import org.reactivestreams.Publisher;
 
 /**
  * @param <T> A transformer that make your RX stream doesn't emit or throw exception until the
- * lifecycle behaviour subject emit active event(Resume).
+ * semaphore behaviour subject emit active signal.
  */
 public class RxSemaphoreTransformer<T> implements
         FlowableTransformer<T, T>,
@@ -17,19 +17,19 @@ public class RxSemaphoreTransformer<T> implements
         SingleTransformer<T, T>,
         MaybeTransformer<T, T> {
 
-    private BehaviorSubject<Signal> lifecycleBehaviorSubject;
+    private BehaviorSubject<Signal> semaphoreBehaviorSubject;
 
-    public RxSemaphoreTransformer(BehaviorSubject<Signal> lifecycleBehaviorSubject) {
-        this.lifecycleBehaviorSubject = lifecycleBehaviorSubject;
+    public RxSemaphoreTransformer(BehaviorSubject<Signal> semaphoreBehaviorSubject) {
+        this.semaphoreBehaviorSubject = semaphoreBehaviorSubject;
     }
 
     /**
      * @param upstream
      * @return Do the same logic like {@link RxSemaphoreTransformer#applyLogic(Observable)} but we
      * can't call this function because by converting the flowable to observable and passing it to
-     * this function we will lose the back pressure strategy and when can't return it back when
-     * we convert the returned ovservable from apply logic function to flowable because there is no
-     * function that get the back pressure strategy of flowable.
+     * this function we will lose the back pressure strategy and can't return it back when we convert
+     * the returned observable from apply logic function to flowable because there is no function that
+     * get the back pressure strategy of original flowable.
      */
     @Override
     public Publisher<T> apply(Flowable<T> upstream) {
@@ -61,9 +61,9 @@ public class RxSemaphoreTransformer<T> implements
     /**
      * @param upstream
      * @return Do the same logic like {@link RxSemaphoreTransformer#applyLogic(Observable)} except
-     * few things. We need to handle if the upstream maybe emit zero item then we need to make him
-     * to emit empty wrapper instead of complete the stream and after the we receive active signal
-     * we will ignore any wrapper that contains empty T and Throwable.
+     * few things. We need to handle if the upstream (maybe) emit zero item then we need to make it
+     * emit empty wrapper instead of complete the stream and after we receive the active signal
+     * we will ignore any wrapper that contains empty T and Throwable and complete the stream.
      */
     @Override
     public MaybeSource<T> apply(Maybe<T> upstream) {
@@ -83,11 +83,11 @@ public class RxSemaphoreTransformer<T> implements
      * 1- converts stream type from T to Wrapper<T> with
      * {@link RxSemaphoreTransformer#mapTToWrapperFunction}.
      * <p>
-     * 2- Fetch any throwable before thrown and save it inside a wrapper<T>  with
+     * 2- Fetch any throwable before thrown and save it inside a wrapper<T> with
      * {@link RxSemaphoreTransformer#mapThrowableToWrapperFunction}.
      * <p>
-     * 3- Convert any event emitted by the main observable to observable will emit the same event
-     * when the lifecycle become active with {@link RxSemaphoreTransformer#getLifecycleObservable}
+     * 3- Convert any item emitted by the main observable to observable that will emit the same event
+     * when the semaphore become active with {@link RxSemaphoreTransformer#getLifecycleObservable}
      * => We used concat map instead of flat map because concat map preserve the order of items.
      * <p>
      * 4- Return back the stream type from Wrapper<T> to T which is the main type or throw the
@@ -102,32 +102,31 @@ public class RxSemaphoreTransformer<T> implements
     }
 
     /**
-     * Map t to Wrapper of t to be able to save t or throwable inside this wrapper and make the
+     * Map T to Wrapper of T to be able to save T or any throwable inside this wrapper and make the
      * stream of only one type (Wrapper<T>)
      */
     private Function<T, Wrapper<T>> mapTToWrapperFunction = t -> new Wrapper(t);
 
     /**
-     * Map throwable to Wrapper of to store throwable inside this wrapper and make the stream of
-     * only one type (Wrapper<T>)
+     * Map throwable to Wrapper of T that stores the throwable to make the stream of only one type (Wrapper<T>)
      */
     private Function<Throwable, Wrapper<T>> mapThrowableToWrapperFunction = throwable -> new Wrapper(throwable);
 
     /**
      * @param tWrapper
-     * @return observable that will emit once when lifecycle become active then make this active
+     * @return observable that will emit once when semaphore become active then map this active
      * signal to stream type (Wrapper<T>)
      */
     private Observable<Wrapper<T>> getLifecycleObservable(Wrapper<T> tWrapper) {
-        return lifecycleBehaviorSubject
-                .filter(fragmentEvent -> fragmentEvent == Signal.ACTIVE)
+        return semaphoreBehaviorSubject
+                .filter(signal -> signal == Signal.ACTIVE)
                 .take(1)
-                .map(integer -> tWrapper);
+                .map(signal -> tWrapper);
     }
 
     /**
      * Map the Wrapper<T> to the real stream type (T) or throw the saved exception that saved until
-     * lifecycle emit active signal.
+     * semaphore emit active signal.
      */
     private Function<Wrapper<T>, T> mapWrapperToTFunction = wrapper -> {
         if (wrapper.throwable != null)
