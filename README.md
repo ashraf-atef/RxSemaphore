@@ -1,4 +1,5 @@
-#Rx Semaphore
+# Rx Semaphore
+
 This library help you to make th RX streams hold their emissions when you inactive and emit them when you come back
 active without making you dispose the stream and resubscribe to it again when you come back active.
 
@@ -55,5 +56,13 @@ signal in onStart that will make the streams emit all held emissions.
 
 ## Conclusion
 
-We made our RX streams act as [LiveData](https://developer.android.com/topic/libraries/architecture/livedata)as we can control when our streams should emit or hold the emissions until we
+We made our RX streams act as [LiveData](https://developer.android.com/topic/libraries/architecture/livedata) as we can control when our streams should emit or hold the emissions until we
 push active signal and release the semaphore.
+
+## Installation
+
+[![](https://jitpack.io/v/ashraf-atef/RxSemaphore.svg)](https://jitpack.io/#ashraf-atef/RxSemaphore)
+
+```gradle
+implementation 'com.github.ashraf-atef:RxSemaphore:vX.X'
+```
