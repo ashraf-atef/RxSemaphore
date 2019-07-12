@@ -41,14 +41,14 @@ Completable
 * In projects that applies MVP architecture pattern you should dispose all RX streams in fragments in onDestroyView
 because if the you didn't dispose them, the presenter will tell the view to perform actions on view already destroyed
 that will lead to null pointer exception. OnDestroyView will be called if we replaced fragment with another with adding
-this transaction to back stack. So when user press back we should check if the data loaded before and if not we should
+this transaction to the back stack. So when the user presses back we should check if the data loaded before and if not we should
 execute the stream again by resubscribe to it. So with RX Semaphore we won't have to dispose our not completed streams
 in onDestroyView and resubscribe to them from scratch in onCreateView, we will just push inactive signal in onStop that
 will tell the streams to hold the emissions until we push the active signal in onStart that will make the streams emits
 all held emissions.
 
 * In projects that applies MVP architecture pattern we often dispose all streams in activities in onDestroy that lead to
-applying actions on views of activities that are in back stack which isn't visible to the user. So with RX Semaphore we
+applying actions on views of activities that are in the back stack which isn't visible to the user. So with RX Semaphore we
 will just push inactive signal in onStop that will tell the streams to hold the emissions until we push the active
 signal in onStart that will make the streams emit all held emissions.
 
