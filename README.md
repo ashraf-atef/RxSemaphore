@@ -58,6 +58,48 @@ signal in onStart that will make the streams emit all held emissions.
 We made our RX streams act as [LiveData](https://developer.android.com/topic/libraries/architecture/livedata) so we can control when our streams should emit or hold the emissions until we
 push active signal and release the semaphore.
 
+## Philosophy
+
+* The logic of semaphore based on a transformer you add with compose operator which contains a behaviour subject(Semaphore)
+that hold the value of the signal (active/inactive).
+
+* With every item emitted by the original observable we concat map it to observable will emit the same item but after the
+semaphore behaviour subject emit the active signal using concatMap operator which is like flat map but it preserve the
+order of the emitted items.
+
+* You maybe ask yourself what will we do If the original source throw a throwable. How can we hold it until the semaphore
+emit the active signal and prevent the observer error consumer receive it immediately. We convert the throwble to a
+wrapper contains the thrown throwable using onErrorReturn operator.
+
+* Another thing we need to handle is to convert any item emitted by the source observable to the same
+that contains the emitted value as generic (T). So our stream type will be Wrapper<T> which contains a T(emitted item)
+and a Throwable.
+
+* After the observable of the semaphore emit the active signal which mapped to the same Wrapper, we map it again to a T or
+rethrow the thrown throwable if it's not null inside the wrapper.
+
+```kotlin
+SourceObservable
+        /**
+         * Map throwable to Wrapper of T that stores the throwable to make the stream of only one type (Wrapper<T>)
+         */
+        .map(mapTToWrapperFunction)
+        /**
+         * Map throwable to Wrapper of T that stores the throwable to make the stream of only one type (Wrapper<T>)
+         */
+        .onErrorReturn(mapThrowableToWrapperFunction)
+        /**
+         * Concat map the previous wrapper to Observable that will emit once when semaphore become active then
+         * map this active signal to the stream type (Wrapper<T>)
+         */
+        .concatMap(RxSemaphoreTransformer.this::getRxSemaphoreObservable)
+        /**
+         * Map the Wrapper<T> to the real stream type (T) or throw the saved exception that saved until
+         * semaphore emit active signal.
+         */
+        .map(mapWrapperToTFunction)
+```
+
 ## Installation
 
 [![](https://jitpack.io/v/ashraf-atef/RxSemaphore.svg)](https://jitpack.io/#ashraf-atef/RxSemaphore)
