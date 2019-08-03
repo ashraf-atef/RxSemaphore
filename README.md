@@ -12,7 +12,7 @@ val rxSemaphore = RxSemaphore()
 //Get your observable
 Observable.just("Hello RX Semaphore")
     //Add Rx Semaphore transformer to your observable
-    .compose(rxSemaphore.getRxLifecycleAwareTransformer())
+    .compose(rxSemaphore.getRxSemaphoreTransformer())
     .subscribe { Log.d("Result", it)}
 
 //To start receiving observable emissions When you become active just release the semaphore to push the active signal
@@ -31,7 +31,7 @@ won't be called util you release the semaphore.
 Completable
     .complete()
     .doOnComplete { Log.d("RxSemaphore", "Won't respect the semaphore") }
-    .compose(rxSemaphore.getRxLifecycleAwareTransformer<Any>())
+    .compose(rxSemaphore.getRxSemaphoreTransformer<Any>())
     .doOnComplete { println("Will respect the semaphore") }
     .subscribe  { println("Will respect the semaphore") }
 ```
