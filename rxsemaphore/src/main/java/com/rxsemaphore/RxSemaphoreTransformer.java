@@ -36,7 +36,7 @@ public class RxSemaphoreTransformer<T> implements
         return upstream
                 .map(mapTToWrapperFunction)
                 .onErrorReturn(mapThrowableToWrapperFunction)
-                .concatMap(tWrapper -> getLifecycleObservable(tWrapper)
+                .concatMap(tWrapper -> getRxSemaphoreObservable(tWrapper)
                         .toFlowable(BackpressureStrategy.LATEST))
                 .map(mapWrapperToTFunction);
     }
@@ -71,7 +71,7 @@ public class RxSemaphoreTransformer<T> implements
                 .map(mapTToWrapperFunction)
                 .switchIfEmpty(Maybe.just(new Wrapper<T>()))
                 .onErrorReturn(mapThrowableToWrapperFunction)
-                .concatMap(tWrapper -> getLifecycleObservable(tWrapper).firstElement())
+                .concatMap(tWrapper -> getRxSemaphoreObservable(tWrapper).firstElement())
                 .filter(tWrapper -> tWrapper.t != null || tWrapper.throwable != null)
                 .map(mapWrapperToTFunction);
     }
@@ -87,7 +87,7 @@ public class RxSemaphoreTransformer<T> implements
      * {@link RxSemaphoreTransformer#mapThrowableToWrapperFunction}.
      * <p>
      * 3- Convert any item emitted by the main observable to observable that will emit the same event
-     * when the semaphore become active with {@link RxSemaphoreTransformer#getLifecycleObservable}
+     * when the semaphore become active with {@link RxSemaphoreTransformer#getRxSemaphoreObservable}
      * => We used concat map instead of flat map because concat map preserve the order of items.
      * <p>
      * 4- Return back the stream type from Wrapper<T> to T which is the main type or throw the
@@ -97,7 +97,7 @@ public class RxSemaphoreTransformer<T> implements
         return observable
                 .map(mapTToWrapperFunction)
                 .onErrorReturn(mapThrowableToWrapperFunction)
-                .concatMap(RxSemaphoreTransformer.this::getLifecycleObservable)
+                .concatMap(RxSemaphoreTransformer.this::getRxSemaphoreObservable)
                 .map(mapWrapperToTFunction);
     }
 
@@ -117,7 +117,7 @@ public class RxSemaphoreTransformer<T> implements
      * @return observable that will emit once when semaphore become active then map this active
      * signal to stream type (Wrapper<T>)
      */
-    private Observable<Wrapper<T>> getLifecycleObservable(Wrapper<T> tWrapper) {
+    private Observable<Wrapper<T>> getRxSemaphoreObservable(Wrapper<T> tWrapper) {
         return semaphoreBehaviorSubject
                 .filter(signal -> signal == Signal.ACTIVE)
                 .take(1)

@@ -28,7 +28,7 @@ abstract class BasePresenter {
     }
 
      protected fun <T> getRxSemaphoreTransformer(): RxSemaphoreTransformer<T> {
-        return rxSemaphore.getRxLifecycleAwareTransformer()
+        return rxSemaphore.getRxSemaphoreTransformer()
     }
 
     protected fun addDisposable(disposable: Disposable) {

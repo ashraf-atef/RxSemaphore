@@ -335,6 +335,6 @@ public class RxSemaphoreTest {
 
     @SuppressWarnings("unchecked")
     private <T> RxSemaphoreTransformer<T> getRxSemaphoreTransformer() {
-        return rxSemaphore.getRxLifecycleAwareTransformer();
+        return rxSemaphore.getRxSemaphoreTransformer();
     }
 }

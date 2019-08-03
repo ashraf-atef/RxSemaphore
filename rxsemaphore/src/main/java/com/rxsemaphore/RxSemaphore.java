@@ -18,7 +18,7 @@ public class RxSemaphore {
      * @return the transformer that you will compose it into your stream to apply semaphore logic
      */
     @SuppressWarnings("unchecked")
-    public <T> RxSemaphoreTransformer<T> getRxLifecycleAwareTransformer() {
+    public <T> RxSemaphoreTransformer<T> getRxSemaphoreTransformer() {
         return (RxSemaphoreTransformer<T>) rxSemaphoreTransformer;
     }
 
