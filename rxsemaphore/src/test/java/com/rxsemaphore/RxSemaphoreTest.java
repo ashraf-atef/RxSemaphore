@@ -54,11 +54,26 @@ public class RxSemaphoreTest {
     }
 
     @Test
-    public void emitErrorWithSingle_whenViewInactiveThenActive_shouldThrowWhenViewBecomeActive() throws Exception {
-
+    public void emitExceptionWithSingle_whenViewInactiveThenActive_shouldThrowWhenViewBecomeActive() throws Exception {
         deactivateView();
 
         Single.error(new Exception("Error"))
+                .compose(getRxSemaphoreTransformer())
+                .subscribe(o -> {
+                }, throwable -> this.throwable = throwable);
+
+        Assert.assertNull(throwable);
+
+        activeView();
+
+        Assert.assertEquals(thrownThrowable.getMessage(), throwable.getMessage());
+    }
+
+    @Test
+    public void emitThrowableWithSingle_whenViewInactiveThenActive_shouldThrowWhenViewBecomeActive() throws Exception {
+        deactivateView();
+
+        Single.error(new Throwable("Error"))
                 .compose(getRxSemaphoreTransformer())
                 .subscribe(o -> {
                 }, throwable -> this.throwable = throwable);
@@ -98,11 +113,26 @@ public class RxSemaphoreTest {
     }
 
     @Test
-    public void emitErrorWithCompletable_whenViewInactiveThenActive_shouldThrowWhenViewBecomeActive() throws Exception {
-
+    public void emitExceptionWithCompletable_whenViewInactiveThenActive_shouldThrowWhenViewBecomeActive() throws Exception {
         deactivateView();
 
         Completable.error(new Exception("Error"))
+                .compose(getRxSemaphoreTransformer())
+                .subscribe(() -> {
+                }, throwable -> this.throwable = throwable);
+
+        Assert.assertNull(throwable);
+
+        activeView();
+
+        Assert.assertEquals(thrownThrowable.getMessage(), throwable.getMessage());
+    }
+
+    @Test
+    public void emitThrowableWithCompletable_whenViewInactiveThenActive_shouldThrowWhenViewBecomeActive() throws Exception {
+        deactivateView();
+
+        Completable.error(new Throwable("Error"))
                 .compose(getRxSemaphoreTransformer())
                 .subscribe(() -> {
                 }, throwable -> this.throwable = throwable);
@@ -142,22 +172,6 @@ public class RxSemaphoreTest {
     }
 
     @Test
-    public void emitErrorWithMay_whenViewInactiveThenActive_shouldThrowWhenViewBecomeActive() throws Exception {
-        deactivateView();
-
-        Maybe.error(new Exception("Error"))
-                .compose(getRxSemaphoreTransformer())
-                .subscribe(o -> {
-                }, throwable -> this.throwable = throwable);
-
-        Assert.assertNull(throwable);
-
-        activeView();
-
-        Assert.assertEquals(thrownThrowable.getMessage(), throwable.getMessage());
-    }
-
-    @Test
     public void emitEmptyWithMay_whenViewInactiveThenActive_shouldThrowWhenViewBecomeActive() throws Exception {
         deactivateView();
 
@@ -175,6 +189,37 @@ public class RxSemaphoreTest {
         Assert.assertEquals(emittedItem, response);
     }
 
+    @Test
+    public void emitExceptionWithMay_whenViewInactiveThenActive_shouldThrowWhenViewBecomeActive() throws Exception {
+        deactivateView();
+
+        Maybe.error(new Exception("Error"))
+                .compose(getRxSemaphoreTransformer())
+                .subscribe(o -> {
+                }, throwable -> this.throwable = throwable);
+
+        Assert.assertNull(throwable);
+
+        activeView();
+
+        Assert.assertEquals(thrownThrowable.getMessage(), throwable.getMessage());
+    }
+
+    @Test
+    public void emiThrowableWithMay_whenViewInactiveThenActive_shouldThrowWhenViewBecomeActive() throws Exception {
+        deactivateView();
+
+        Maybe.error(new Throwable("Error"))
+                .compose(getRxSemaphoreTransformer())
+                .subscribe(o -> {
+                }, throwable -> this.throwable = throwable);
+
+        Assert.assertNull(throwable);
+
+        activeView();
+
+        Assert.assertEquals(thrownThrowable.getMessage(), throwable.getMessage());
+    }
 
     //-------------------------------------- Observable --------------------------------------------
     @Test
@@ -201,23 +246,6 @@ public class RxSemaphoreTest {
         activeView();
 
         Assert.assertEquals(emittedItem, response);
-    }
-
-    @Test
-    public void emitErrorWithObservable_whenViewInactiveThenActive_shouldThrowWhenViewBecomeActive() throws Exception {
-
-        deactivateView();
-
-        Observable.error(new Exception("Error"))
-                .compose(getRxSemaphoreTransformer())
-                .subscribe(o -> {
-                }, throwable -> this.throwable = throwable);
-
-        Assert.assertNull(throwable);
-
-        activeView();
-
-        Assert.assertEquals(thrownThrowable.getMessage(), throwable.getMessage());
     }
 
     @Test
@@ -248,6 +276,38 @@ public class RxSemaphoreTest {
         Assert.assertEquals(2, response.intValue());
     }
 
+    @Test
+    public void emitExceptionWithObservable_whenViewInactiveThenActive_shouldThrowWhenViewBecomeActive() throws Exception {
+        deactivateView();
+
+        Observable.error(new Exception("Error"))
+                .compose(getRxSemaphoreTransformer())
+                .subscribe(o -> {
+                }, throwable -> this.throwable = throwable);
+
+        Assert.assertNull(throwable);
+
+        activeView();
+
+        Assert.assertEquals(thrownThrowable.getMessage(), throwable.getMessage());
+    }
+
+    @Test
+    public void emitThrowableWithObservable_whenViewInactiveThenActive_shouldThrowWhenViewBecomeActive() throws Exception {
+        deactivateView();
+
+        Observable.error(new Throwable("Error"))
+                .compose(getRxSemaphoreTransformer())
+                .subscribe(o -> {
+                }, throwable -> this.throwable = throwable);
+
+        Assert.assertNull(throwable);
+
+        activeView();
+
+        Assert.assertEquals(thrownThrowable.getMessage(), throwable.getMessage());
+    }
+
     //-------------------------------------- Flowable --------------------------------------------
     @Test
     public void emitOneValueWithFlowable_whenViewActive_shouldPerformLogicImmediately() throws Exception {
@@ -276,23 +336,6 @@ public class RxSemaphoreTest {
     }
 
     @Test
-    public void emitErrorWithFlowable_whenViewInactiveThenActive_shouldThrowWhenViewBecomeActive() throws Exception {
-
-        deactivateView();
-
-        Flowable.error(new Exception("Error"))
-                .compose(getRxSemaphoreTransformer())
-                .subscribe(o -> {
-                }, throwable -> this.throwable = throwable);
-
-        Assert.assertNull(throwable);
-
-        activeView();
-
-        Assert.assertEquals(thrownThrowable.getMessage(), throwable.getMessage());
-    }
-
-    @Test
     public void emitManyValuesWithOFlowable_whenViewInactiveThenActive_shouldPerformLogicWhenViewBecomeActive() throws Exception {
         deactivateView();
 
@@ -318,6 +361,39 @@ public class RxSemaphoreTest {
         sleep(1);
 
         Assert.assertEquals(2, response.intValue());
+    }
+
+    @Test
+    public void emitExceptionWithFlowable_whenViewInactiveThenActive_shouldThrowWhenViewBecomeActive() throws Exception {
+        deactivateView();
+
+        Flowable.error(new Exception("Error"))
+                .compose(getRxSemaphoreTransformer())
+                .subscribe(o -> {
+                }, throwable -> this.throwable = throwable);
+
+        Assert.assertNull(throwable);
+
+        activeView();
+
+        Assert.assertEquals(thrownThrowable.getMessage(), throwable.getMessage());
+    }
+
+    @Test
+    public void emitThrowableWithFlowable_whenViewInactiveThenActive_shouldThrowWhenViewBecomeActive() throws Exception {
+
+        deactivateView();
+
+        Flowable.error(new Throwable("Error"))
+                .compose(getRxSemaphoreTransformer())
+                .subscribe(o -> {
+                }, throwable -> this.throwable = throwable);
+
+        Assert.assertNull(throwable);
+
+        activeView();
+
+        Assert.assertEquals(thrownThrowable.getMessage(), throwable.getMessage());
     }
 
     private void activeView() {
